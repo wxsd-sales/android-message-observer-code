@@ -22,6 +22,7 @@ import com.example.webexandroid.R
 import com.example.webexandroid.WebexAndroidApp
 import com.example.webexandroid.WebviewActivity
 import com.example.webexandroid.databinding.ActivityLoginWithTokenBinding
+import com.example.webexandroid.messaging.spaces.detail.SpaceDetailActivity
 import com.example.webexandroid.utils.Constants
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
@@ -64,24 +65,26 @@ class JWTLoginActivity : AppCompatActivity() {
                 .also { binding = it }
                 .apply {
                     progressLayout.visibility = View.VISIBLE
-//                    val key="4MZaGGGkMYumXT4/gkZY2L1Nreqybhx2b6e3ZMokd1w="
-//                    val seckey = Keys.hmacShaKeyFor((Decoders.BASE64.decode(key)))
-//                    val rndm= (0..100000).random()
-//                    val sub="guest-"+rndm.toString()
-//                    //val sub="guest-3"
-//                    val now = Date()
-//                    Log.e("name",name)
-//                    val jwt = Jwts.builder()
-//                        .setHeaderParam("typ", "JWT")
-//                        .setHeaderParam("alg","HS256")
-//                        .claim("sub", sub)
-//                        .claim("name",name)
-//                        .claim("iss","Y2lzY29zcGFyazovL3VzL09SR0FOSVpBVElPTi84NTBjMTA1Yy1lMDAwLTQ4ZDctYmZiZC02Mjg2MTc1NmVmZDI")
-//                        .setExpiration(Date(now.time + 2 * 1000 * 60 * 60))
-//                        .signWith(seckey)
-//                        .compact()
-                    token = "YTZhZDg4YzctZjE3Mi00NjkzLWExNTItOWMwYWQxMTk5ZWNkNTM5M2Q5OGItZmYy_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f"
-                    loginViewModel.loginWithToken(token!!)
+                    val key="mK/6LbgBAGbUIHmqSZa0XNlUN7R9kFEA28qaDYJFeik="
+                    val seckey = Keys.hmacShaKeyFor((Decoders.BASE64.decode(key)))
+                    val rndm= (0..100000).random()
+                    //val sub="guest-"+rndm.toString()
+                    val sub="guest-3"
+                    val now = Date()
+                    Log.e("name",name)
+                    val jwt = Jwts.builder()
+                        .setHeaderParam("typ", "JWT")
+                        .setHeaderParam("alg","HS256")
+                        .claim("sub", sub)
+                        .claim("name",name)
+                        .claim("iss","Y2lzY29zcGFyazovL3VzL09SR0FOSVpBVElPTi84NTBjMTA1Yy1lMDAwLTQ4ZDctYmZiZC02Mjg2MTc1NmVmZDI")
+                        .setExpiration(Date(now.time + 2 * 1000 * 60 * 60))
+                        .signWith(seckey)
+                        .compact()
+                    token = jwt
+                    Log.e("token",token)
+                    //token = "YTZhZDg4YzctZjE3Mi00NjkzLWExNTItOWMwYWQxMTk5ZWNkNTM5M2Q5OGItZmYy_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f"
+                    loginViewModel.loginWithJWT(token!!)
 
                     loginViewModel.isAuthorized.observe(this@JWTLoginActivity, Observer { isAuthorized ->
                         progressLayout.visibility = View.GONE
@@ -123,8 +126,8 @@ class JWTLoginActivity : AppCompatActivity() {
     private fun onLoggedIn() {
         Log.e("selectionName","in JWT main"+selectionName)
         Log.e("Bottoken",token)
-//        val url = "https://webexapis.com/v1/jwt/login"
-//
+        val url = "https://webexapis.com/v1/jwt/login"
+
 ////        val currentTime = Calendar.getInstance().time
 ////
 ////        Log.e("Currenttime", currentTime.toString())
@@ -140,35 +143,35 @@ class JWTLoginActivity : AppCompatActivity() {
 //////builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 ////
 ////        builder.setPositiveButton(android.R.string.ok) { dialog, which ->
-//            val request: JsonObjectRequest = object :
-//                JsonObjectRequest(Request.Method.POST, url, null, Response.Listener { response ->
-//                    try {
-//                        val accessToken=response.getString("token")
-//                        Log.e("accesstoken",accessToken)
-////                    ContextCompat.startActivity(this, SpaceDetailActivity.getIntent(this, spaceId,
-////                        SpaceDetailActivity.Companion.ComposerType.POST_SPACE, null, null,false,selectionName,name,accessToken), null)
-//                        //startActivity(Intent(this@JWTLoginActivity, WebviewActivity::class.java))
-//                        ContextCompat.startActivity(this, WebviewActivity.getIntent(this,accessToken,spaceId), null)
-//                        finish()
-//                    } catch (e: JSONException) {
-//                        e.printStackTrace()
-//                    }
-//                }, Response.ErrorListener { error -> error.printStackTrace() }
-//                ) {
-//                @Throws(AuthFailureError::class)
-//                override fun getHeaders(): Map<String, String> {
-//                    val params: MutableMap<String, String> = HashMap()
-//                    params["Content-Type"] = "application/json"
-//                    params["Authorization"] =
-//                        "Bearer "+token
-//                    return params
-//                }
-//            }
-//            queue?.add(request)
+            val request: JsonObjectRequest = object :
+                JsonObjectRequest(Request.Method.POST, url, null, Response.Listener { response ->
+                    try {
+                        val accessToken=response.getString("token")
+                        Log.e("accesstoken",accessToken)
+                    ContextCompat.startActivity(this, SpaceDetailActivity.getIntent(this, spaceId,
+                        SpaceDetailActivity.Companion.ComposerType.POST_SPACE, null, null,false,selectionName,name,accessToken), null)
+                        //startActivity(Intent(this@JWTLoginActivity, WebviewActivity::class.java))
+                        //ContextCompat.startActivity(this, WebviewActivity.getIntent(this,accessToken,spaceId), null)
+                        finish()
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                }, Response.ErrorListener { error -> error.printStackTrace() }
+                ) {
+                @Throws(AuthFailureError::class)
+                override fun getHeaders(): Map<String, String> {
+                    val params: MutableMap<String, String> = HashMap()
+                    params["Content-Type"] = "application/json"
+                    params["Authorization"] =
+                        "Bearer "+token
+                    return params
+                }
+            }
+            queue?.add(request)
 //        }
 //
 //        builder.setNegativeButton(android.R.string.cancel) { dialog, which ->
-            startActivity(Intent(this@JWTLoginActivity, WebviewActivity::class.java))
+            //startActivity(Intent(this@JWTLoginActivity, WebviewActivity::class.java))
 //        }
 //        builder.show()
 

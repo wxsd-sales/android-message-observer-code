@@ -2,6 +2,8 @@ package com.example.webexandroid.firebase
 
 import android.util.Log
 import android.widget.Toast
+import com.ciscowebex.androidsdk.utils.SettingsStore.getContext
+import com.example.webexandroid.utils.SharedPrefUtils
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
@@ -15,8 +17,8 @@ object FirebaseDBManager {
     private val database = FirebaseDatabase.getInstance()
     val db = Firebase.firestore
     var count=0
-    var myRef = database.getReference().child("Options").child("help-topic-list-data")
-    var upRef= database.getReference("Options")
+    var myRef = database.getReference().child("Users")
+    var upRef= database.getReference("help-topic-list-data")
     var dataMap: HashMap<String, String> = HashMap()
     var jsonString:String=""
     var url :String?=null
@@ -70,55 +72,76 @@ object FirebaseDBManager {
     }
 
     init {
-        fetchUrl()
+        fetchUrl("" + getContext()?.let { SharedPrefUtils.getEmailPref(it) })
     }
-    fun getData() {
-        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-//                jsonString = snapshot.value.toString()
-//                Log.e("jsonString",jsonString)
-//                val jsonObject = JSONArray(jsonString)
-//                var index = 0;
-//                do {
-//                    val item:JSONObject =  jsonObject[index++]  as JSONObject
-//                    val type: String = item.get("option_title").toString()
-//                    val amount: String = item.get("agent_email").toString()
-//                    dataMap.set(type, amount)
-//                }while (index<jsonObject.length())
+    fun getData(email:String) {
+        Log.e("emailgot",email)
+        var emailnew=email.replace('.','*')
+        var isDataFound = false
+        if(emailnew!="default") {
+            myRef.child(emailnew).child("help-topic-list-data")
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            var agent_email_list: String = ""
+                            var option_title_list: String = ""
+                            count = 0
+                            val children = snapshot!!.children
+                            children.forEach {
+                                count++
+                                Log.e("children", it.toString())
+                                agent_email_list = it.child("agent_email").value!! as String
+                                option_title_list = it.child("option_title").value!! as String
+                                dataMap.set(option_title_list, agent_email_list)
+                            }
+                        }
+                    }
 
-                var agent_email_list : String = ""
-                var option_title_list : String = ""
-                count=0
-                val children = snapshot!!.children
-                children.forEach {
-                    count++
-                    Log.e("children",it.toString())
-                    agent_email_list=it.child("agent_email").value!! as String
-                    option_title_list=it.child("option_title").value!! as String
-                    dataMap.set(option_title_list, agent_email_list)
+                    override fun onCancelled(error: DatabaseError) {
+
+                    }
+                })
+        }
+        else {
+            upRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+
+                    var agent_email_list: String = ""
+                    var option_title_list: String = ""
+                    count = 0
+                    val children = snapshot!!.children
+                    children.forEach {
+                        count++
+                        Log.e("children", it.toString())
+                        agent_email_list = it.child("agent_email").value!! as String
+                        option_title_list = it.child("option_title").value!! as String
+                        dataMap.set(option_title_list, agent_email_list)
+                    }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
+                override fun onCancelled(error: DatabaseError) {
 
-            }
+                }
 
-        })
+            })
+        }
     }
 
-    fun writeData(option_title: String, agent_email: String) {
+    fun writeData(option_title: String, agent_email: String, email:String) {
+        var emailnew=email.replace('.','*')
         val myclass=MyClass(option_title,agent_email)
 //        myRef.child("4").child("option_title").setValue(option_title)
 //        myRef.child("4").child("agent_email").setValue(agent_email)
 //        val newData= myRef.push()
 //        Log.e("newDataKey",newData.key.toString())
-        getData()
+        getData("" + getContext()?.let { SharedPrefUtils.getEmailPref(it) })
         Log.e("count",count.toString())
-        myRef.child(count.toString()).setValue(myclass)
+        myRef.child(emailnew).child("help-topic-list-data").child(count.toString()).setValue(myclass)
     }
 
-    fun removeData() {
-        val urlRef = database.getReference("Options").child("help-topic-list-data")
+    fun removeData(email: String) {
+        var emailnew=email.replace('.','*')
+        val urlRef = database.getReference("Users").child(emailnew).child("help-topic-list-data")
         urlRef.addListenerForSingleValueEvent(object :ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 url = snapshot.value.toString()
@@ -136,18 +159,33 @@ object FirebaseDBManager {
 
 
 
-    fun fetchUrl(){
-        val urlRef = database.getReference("main-screen-background-img")
-        urlRef.addListenerForSingleValueEvent(object :ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                url = snapshot.value.toString()
-                listener?.onLoad()
-            }
+    fun fetchUrl(email: String){
+        var emailnew=email.replace('.','*')
+        if(email!="default"){
+            myRef.child(emailnew).child("background-url").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    url = snapshot.value.toString()
+                    listener?.onLoad()
+                }
 
-            override fun onCancelled(error: DatabaseError) {
-            }
+                override fun onCancelled(error: DatabaseError) {
+                }
 
-        })
+            })
+        }
+        else {
+            val urlRef = database.getReference("main-screen-background-image")
+            urlRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    url = snapshot.value.toString()
+                    listener?.onLoad()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+
+            })
+        }
     }
 
     fun setLoadListener(listener:UrlLoadedListener){
@@ -155,6 +193,13 @@ object FirebaseDBManager {
         if(url!=null){
             listener?.onLoad()
         }
+    }
+
+    fun setURL(backgroundURL : String,email:String) {
+        var emailnew=email.replace('.','*')
+        myRef.child(emailnew).child("background-url").setValue(backgroundURL)
+        listener?.onLoad()
+        fetchUrl(email)
     }
 
 

@@ -9,12 +9,15 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.Window
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
 import com.example.webexandroid.auth.JWTLoginActivity
 import com.example.webexandroid.auth.OAuthWebLoginActivity
@@ -25,6 +28,8 @@ import com.example.webexandroid.utils.extensions.hideKeyboard
 import com.google.android.material.textfield.TextInputEditText
 import org.koin.android.viewmodel.ext.android.viewModel
 import androidx.lifecycle.Observer
+import com.example.webexandroid.databinding.ActivityAlpianMainBinding
+import com.example.webexandroid.utils.SharedPrefUtils.clearLoginTypePref
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -48,51 +53,96 @@ class AlpianMainActivity : AppCompatActivity() {
     val webexViewModel: WebexViewModel by viewModel()
     private lateinit var type: String
     private var loginTypeCalled = LoginType.JWT
+
+    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.rotate_open_anim)}
+    private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.rotate_close_anim)}
+    private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.from_bottom_anim)}
+    private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.to_bottom_anim)}
+    private var clicked= false
     var isAllFieldsChecked = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_alpian_main)
-        val fab: View = findViewById(R.id.add_fab)
-        val editFab: View = findViewById(R.id.edit_fab)
+        val editFab :View = findViewById(R.id.edit_fab)
         val logout: View = findViewById(R.id.logout)
         val settings: View = findViewById(R.id.settings_fab)
+        val fab: View = findViewById(R.id.add_fab)
         type = intent.getStringExtra(Constants.Intent.TYPE) ?: ""
-//        webexViewModel.signOutListenerLiveData.observe(this@AlpianMainActivity, Observer {
-//            it?.let {
-//                if (it) {
-//                    SharedPrefUtils.clearLoginTypePref(this)
-//                    finish()
-//                }
-//            }
-//        })
+        if(type=="oauth") {
+            webexViewModel.signOutListenerLiveData.observe(this@AlpianMainActivity, Observer {
+                it?.let {
+                    if (it) {
+                        clearLoginTypePref(this)
+                        (application as WebexAndroidApp).unloadKoinModules()
+                        KitchenSinkForegroundService.stopForegroundService(this)
+                        finish()
+                    }
+                }
+            })
+        }
 
-        if(type!="oauth")
-        {
-            editFab.visibility=View.GONE
-        }
-        settings.setOnClickListener{
-            editFab.visibility=View.VISIBLE
-            logout.visibility=View.VISIBLE
-        }
-        fab.setOnClickListener { view ->
-            showCreateCategoryDialog()
-        }
-        editFab.setOnClickListener { view ->
-            //showCreateCategoryEditDialog()
-            startActivity(Intent(this@AlpianMainActivity, EditPageDetailsActivity::class.java))
-        }
-        logout.setOnClickListener{
-            webexViewModel.signOut()
-        }
-        val root: ImageView = findViewById(R.id.rootRL)
-        var listener = object : FirebaseDBManager.UrlLoadedListener{
-            override fun onLoad() {
-                Glide.with(this@AlpianMainActivity).load(FirebaseDBManager.url)
-                    .error(ResourcesCompat.getDrawable(resources,R.drawable.alpian,theme))
-                    .into(root)
-            }
-        }
-        FirebaseDBManager.setLoadListener(listener)
+
+                if (type != "oauth") {
+                    editFab.visibility = View.GONE
+                }
+                settings.setOnClickListener {
+                    if (type != "oauth") {
+                        if (clicked) {
+                            editFab.visibility = View.GONE
+                            logout.visibility = View.VISIBLE
+//                            editFab.startAnimation(toBottom)
+                            logout.startAnimation(toBottom)
+                            settings.startAnimation(rotateOpen)
+                        } else {
+                            editFab.visibility = View.GONE
+                            logout.visibility = View.INVISIBLE
+//                            editFab.startAnimation(fromBottom)
+                            logout.startAnimation(fromBottom)
+                            settings.startAnimation(rotateClose)
+                        }
+                    }
+                    else{
+                        if (clicked) {
+                            editFab.visibility = View.VISIBLE
+                            logout.visibility = View.VISIBLE
+                            editFab.startAnimation(toBottom)
+                            logout.startAnimation(toBottom)
+                            settings.startAnimation(rotateOpen)
+                        } else {
+                            editFab.visibility = View.INVISIBLE
+                            logout.visibility = View.INVISIBLE
+                            editFab.startAnimation(fromBottom)
+                            logout.startAnimation(fromBottom)
+                            settings.startAnimation(rotateClose)
+                        }
+                    }
+                    clicked = !clicked
+                }
+                fab.setOnClickListener { view ->
+                    showCreateCategoryDialog()
+                }
+                editFab.setOnClickListener { view ->
+                    //showCreateCategoryEditDialog()
+                    startActivity(
+                        Intent(
+                            this@AlpianMainActivity,
+                            EditPageDetailsActivity::class.java
+                        )
+                    )
+                }
+                logout.setOnClickListener {
+                    webexViewModel.signOut()
+                }
+                val root: ImageView = findViewById(R.id.rootRL)
+                var listener = object : FirebaseDBManager.UrlLoadedListener {
+                    override fun onLoad() {
+                        Glide.with(this@AlpianMainActivity).load(FirebaseDBManager.url)
+                            .error(ResourcesCompat.getDrawable(resources, R.drawable.alpian, theme))
+                            .into(root)
+                    }
+                }
+                FirebaseDBManager.setLoadListener(listener)
+
     }
 
     private fun startJWTActivity(name: String, selection: String, selectionName: String) {

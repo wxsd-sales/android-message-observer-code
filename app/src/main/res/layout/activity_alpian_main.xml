@@ -17,17 +17,19 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_fab"
-        android:src="@drawable/ic_baseline_call_24"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="156dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="26dp"
+        android:layout_marginEnd="26dp"
+        android:layout_marginBottom="30dp"
         android:backgroundTint="#017A6F"
+        android:src="@drawable/ic_baseline_message_24"
         app:layout_anchor="@id/add_fab"
         app:layout_anchorGravity="bottom"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -45,34 +47,36 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/edit_fab"
+        android:id="@+id/logout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_marginStart="16dp"
         android:layout_marginTop="86dp"
         android:visibility="gone"
-        android:backgroundTint="#017A6F"
-        android:src="@drawable/ic_baseline_edit_24"
-        app:layout_anchor="@id/add_fab"
-        app:layout_anchorGravity="top"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="156dp"
-        android:visibility="gone"
-        android:backgroundTint="#ffffff"
+        android:backgroundTint="#4CAF50"
         android:src="@drawable/ic_baseline_logout_24"
         app:layout_anchor="@id/add_fab"
         app:layout_anchorGravity="top"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/edit_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="156dp"
+        android:visibility="gone"
+        android:backgroundTint="#4CAF50"
+        android:src="@drawable/ic_baseline_edit_24"
+        app:layout_anchor="@id/add_fab"
+        app:layout_anchorGravity="top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
             <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
 <!--        android:id="@+id/edit"-->

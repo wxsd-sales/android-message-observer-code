@@ -11,6 +11,8 @@ import com.example.webexandroid.AlpianMainActivity
 import com.example.webexandroid.databinding.ActivityLoginBinding
 import com.example.webexandroid.R
 import com.example.webexandroid.WebexAndroidApp
+import com.example.webexandroid.firebase.FirebaseDBManager
+import com.example.webexandroid.utils.SharedPrefUtils
 import com.example.webexandroid.utils.SharedPrefUtils.getEmailPref
 import com.example.webexandroid.utils.SharedPrefUtils.getLoginTypePref
 import com.example.webexandroid.utils.SharedPrefUtils.saveEmailPref
@@ -45,13 +47,14 @@ class LoginActivity : AppCompatActivity() {
 
                 btnOauthLogin.setOnClickListener {
                     loginTypeCalled = LoginType.OAuth
+                    saveEmailPref(this@LoginActivity, textEmailAddress.text.toString())
 
                     var emailaddr = textEmailAddress.text
                     if (emailaddr.isEmpty() ) {
                         runOnUiThread(Runnable {
                             Toast.makeText(
                                 getApplicationContext(),
-                                "Please enter your cisco email address",
+                                "Please enter your email address",
                                 Toast.LENGTH_LONG
                             ).show()
                         })
@@ -62,8 +65,21 @@ class LoginActivity : AppCompatActivity() {
                             = HashMap<String, String> ()
                     //profileMap.put("uid",uid)
                     var email=emailaddr.toString()
+                    var url:String=""
                     email=email.replace('.','*')
                     profileMap.put("email",emailaddr.toString())
+                    val urlRef = FirebaseDatabase.getInstance().getReference().child("main-screen-background-image")
+                    urlRef.addListenerForSingleValueEvent(object :ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            url = snapshot.value.toString()
+                            profileMap.put("background-url",url)
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                        }
+
+                    })
+
 
                     val postListener = object : ValueEventListener {
                         override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -95,10 +111,14 @@ class LoginActivity : AppCompatActivity() {
 //                        })
 
                     saveEmailPref(this@LoginActivity, textEmailAddress.text.toString())
+                    FirebaseDBManager.getData("" + SharedPrefUtils.getEmailPref(this@LoginActivity))
+                    FirebaseDBManager.fetchUrl("" + SharedPrefUtils.getEmailPref(this@LoginActivity))
                     startOAuthActivity()
                 }
 
                 btnJwtLogin?.setOnClickListener{
+                    FirebaseDBManager.getData("default")
+                    FirebaseDBManager.fetchUrl("default")
                     ContextCompat.startActivity(
                         this@LoginActivity,
                         AlpianMainActivity.getIntent(this@LoginActivity, "jwt"),

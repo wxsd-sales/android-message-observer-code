@@ -8,9 +8,11 @@ import android.view.View
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
 import com.example.webexandroid.firebase.FirebaseDBManager
+import com.example.webexandroid.utils.SharedPrefUtils
 import com.example.webexandroid.utils.extensions.hideKeyboard
 import com.google.android.material.textfield.TextInputEditText
 
@@ -21,6 +23,7 @@ class EditPageDetailsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_edit_page_details)
         val addButton = findViewById<ImageButton>(R.id.addButton)
         val languageLV = findViewById<ListView>(R.id.idLVLanguages)
+        val backgroundURL = findViewById<TextInputEditText>(R.id.backgroundURL)
         val itemTitle = findViewById<TextInputEditText>(R.id.titleName)
         val agentEmail=findViewById<TextInputEditText>(R.id.agentEmail)
         val lngList: ArrayList<String> = ArrayList()
@@ -42,7 +45,7 @@ class EditPageDetailsActivity : AppCompatActivity() {
             deleteButton.visibility=View.GONE
         }
         FirebaseDBManager.setLoadListener(listener)
-        FirebaseDBManager.getData()
+        FirebaseDBManager.getData("" + SharedPrefUtils.getEmailPref(this))
         val info = FirebaseDBManager.dataMap.map { it }
         // create an array adapter and pass the required parameter
 
@@ -67,10 +70,20 @@ class EditPageDetailsActivity : AppCompatActivity() {
         // on below line we are setting adapter for our list view.
         languageLV.adapter = adapter
         submitButton.setOnClickListener{
-            FirebaseDBManager.fetchUrl()
+            if(backgroundURL.text.toString()!=null) {
+                FirebaseDBManager.setURL(
+                    backgroundURL.text.toString(),
+                    "" + SharedPrefUtils.getEmailPref(this)
+                )
+            }
+            ContextCompat.startActivity(
+                this@EditPageDetailsActivity,
+                AlpianMainActivity.getIntent(this@EditPageDetailsActivity, "oauth"),
+                null
+            )
         }
         deleteButton.setOnClickListener{
-            FirebaseDBManager.removeData()
+            FirebaseDBManager.removeData("" + SharedPrefUtils.getEmailPref(this))
             lngList.clear()
             adapter.notifyDataSetChanged()
             deleteButton.visibility=View.GONE
@@ -93,7 +106,7 @@ class EditPageDetailsActivity : AppCompatActivity() {
                 // that data in list is updated to update our list view.
                 adapter.notifyDataSetChanged()
             }
-            FirebaseDBManager.writeData(itemTitle.text.toString(),agentEmail.text.toString())
+            FirebaseDBManager.writeData(itemTitle.text.toString(),agentEmail.text.toString(), "" + SharedPrefUtils.getEmailPref(this))
             itemTitle.setText("")
             agentEmail.setText("")
             deleteButton.visibility=View.VISIBLE

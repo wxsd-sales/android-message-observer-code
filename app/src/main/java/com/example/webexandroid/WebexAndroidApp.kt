@@ -13,6 +13,7 @@ import com.example.webexandroid.auth.loginModule
 import com.example.webexandroid.firebase.FirebaseDBManager
 import com.example.webexandroid.messaging.messagingModule
 import com.example.webexandroid.search.searchModule
+import com.example.webexandroid.utils.SharedPrefUtils
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.loadKoinModules
@@ -43,7 +44,7 @@ class WebexAndroidApp : Application(), LifecycleObserver {
             androidLogger()
             androidContext(this@WebexAndroidApp)
         }
-        FirebaseDBManager.getData()
+
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
     }
 

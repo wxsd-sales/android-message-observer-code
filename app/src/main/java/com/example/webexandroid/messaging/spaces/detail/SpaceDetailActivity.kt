@@ -511,7 +511,7 @@ class SpaceDetailActivity : BaseActivity(), MessageReceiveListener {
         super.onResume()
         spaceDetailViewModel.getSpaceById()
         //getRequest()
-        //webexViewModel.setMessageObserver(this@SpaceDetailActivity)
+        webexViewModel.setMessageObserver(this@SpaceDetailActivity)
         //spaceDetailViewModel.observeMessages()
         spaceMessageRecyclerView.smoothScrollToPosition(spaceMessageRecyclerView.getAdapter()?.itemCount!!)
     }
